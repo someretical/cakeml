@@ -233,7 +233,9 @@ Definition next_sym_alt_def:
        case skip_comment (TL str) (0:num) (next_loc 2 loc) of
        | NONE => SOME (ErrorS, Locs loc (next_loc 2 loc), "")
        | SOME (rest, loc') => next_sym_alt rest loc'
-     else if c = #"_" then SOME (OtherS "_", Locs loc loc, str) else
+     else if c = #"_" /\
+             (str = "" \/ not (isAlphaNumPrime (HD str))) then
+       SOME (OtherS "_", Locs loc loc, str) else
        let (tok,end_loc,rest) = read_Ident (STRING c str) loc [] in
          SOME (tok,Locs loc end_loc,rest))
 Termination

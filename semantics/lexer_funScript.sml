@@ -234,7 +234,7 @@ Definition read_Ident_def:
       let (n,rest) = read_while isSymbol str [c] in
       let new_loc = next_loc (LENGTH n) loc in
         read_Ident_ret acc n new_loc rest
-    else if isAlpha c then
+    else if isAlpha c \/ c = #"_" then
       let (n,rest) = read_while isAlphaNumPrime str [c] in
       let new_loc = next_loc (LENGTH n) loc in
         case rest of
@@ -307,7 +307,9 @@ Definition next_sym_def:
        case skip_comment (TL str) 0 (next_loc 2 loc) of
        | NONE => SOME (ErrorS, Locs loc (next_loc 2 loc), "")
        | SOME (rest, loc') => next_sym rest loc'
-     else if c = #"_" then SOME (OtherS "_", Locs loc loc, str)
+     else if c = #"_" /\
+             (str = "" \/ not (isAlphaNumPrime (HD str))) then
+       SOME (OtherS "_", Locs loc loc, str)
      else
        let (tok,end_loc,rest) = read_Ident (c::str) loc [] in
          SOME (tok, Locs loc end_loc, rest))
@@ -402,7 +404,7 @@ Definition processIdent_def:
     case s of
        | "" => LexErrorT
        | c::s =>
-           if isAlpha c then
+           if isAlpha c \/ c = #"_" then
              AlphaT (implode (c::s))
            else
              SymbolT (implode (c::s))
